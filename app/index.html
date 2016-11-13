@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html>
+<!--
+This is an app that demonstrates how to control an Arduino101 board
+using BLE (Bluetooth Low Energy).
+-->
+<head>
+
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, user-scalable=no
+		initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0" />
+
+	<title>aRAWRm</title>
+
+	<style>
+		@import 'ui/css/evothings-app.css';
+	</style>
+
+	<script>
+	// Redirect console.log to Evothings Workbench.
+	if (window.hyper && window.hyper.log) { console.log = hyper.log }
+	window.onerror = function(msg, url, line)
+	{
+		console.log(msg + ": " + url + ":" + line);
+	};
+	</script>
+
+	<script src="cordova.js"></script>
+	<script src="libs/jquery/jquery.js"></script>
+	<script src="libs/evothings/evothings.js"></script>
+	<script src="libs/evothings/ui/ui.js"></script>
+	<script src="libs/evothings/arduinoble/arduinoble.js"></script>
+
+</head>
+
+<body ontouchstart=""><!-- ontouchstart="" enables low-delay CSS transitions. -->
+
+	<header>
+		<button class="back" onclick="history.back()">
+			<img src="ui/images/arrow-left.svg" />
+		</button>
+
+		<img class="logotype" src="ui/images/logo.svg" alt="Evothings" />
+
+		<!--<button class="menu" onclick=""><img src="ui/images/menu.svg" /></button>-->
+	</header>
+
+	<h1>aRAWRm
+	<IMG SRC="aRAWRm.png" ALT="pic missing" WIDTH=(0 HEIGHT=40 align = "right">
+		</h1>
+
+	<p id="info">Initializing...</p>
+
+	<button class="yellow wide" onclick="app.connect()">Connect!</button>
+
+
+	<p>
+					<label>Hours</label>
+					<input type = "number"
+								 id = "hour_input"
+								 value = "" />
+	</p>
+
+	<p>
+					<label>Minutes</label>
+					<input type = "number"
+								 id = "min_input"
+								 value = "" />
+	</p>
+
+	<button class="green wide big" onclick="delayedAlert()">Alarm on</button>
+
+	<br />
+
+	<button class="red wide big" onclick="app.ledOff()">Off</button>
+
+	<br />
+
+	<button class="blue wide" onclick="app.soothingLight()">Soothing Light</button>
+	<br />
+
+	<button class="blue wide" onclick="app.partyZone()">Party Zone</button>
+
+
+
+	<script>
+	// Application object.
+	var app = {}
+
+	// Connected device.
+	app.device = null;
+
+	// Turn on LED and alarm
+	app.ledOn = function()
+	{
+		app.showMessage('Alarm triggered!!!');
+		app.device && app.device.writeDataArray(new Uint8Array([1]), '19b10001-e8f2-537e-4f6c-d104768a1214');
+	}
+//turns on led and plays tune
+	app.partyZone = function()
+	{
+
+		app.showMessage('Party Zone!!');
+
+		app.device && app.device.writeDataArray(new Uint8Array([3]), '19b10001-e8f2-537e-4f6c-d104768a1214');
+	}
+//turns on led
+	app.soothingLight = function()
+	{
+		app.showMessage('Soothing light.');
+
+		app.device && app.device.writeDataArray(new Uint8Array([2]), '19b10001-e8f2-537e-4f6c-d104768a1214');
+	}
+
+	// Turn off any function.
+	app.ledOff = function()
+	{
+
+		app.showMessage('Confirm you\'re connected and enter amount of time you want to sleep for.');
+		app.device && app.device.writeDataArray(new Uint8Array([0]), '19b10001-e8f2-537e-4f6c-d104768a1214');
+	}
+
+	app.showMessage = function(info)
+	{
+		document.getElementById('info').innerHTML = info
+	}
+	;
+
+	// Called when BLE and other native functions are available.
+	app.onDeviceReady = function()
+	{
+		app.showMessage('Touch the connect button to begin.');
+	};
+
+	app.connect = function()
+	{
+		evothings.arduinoble.close();
+
+		app.showMessage('Connecting...');
+
+		evothings.arduinoble.connect(
+			'Plush666', // Advertised name of BLE device.
+			function(device)
+			{
+				app.device = device;
+				app.showMessage('Connected! Enter amount of time you want to sleep for.');
+			},
+			function(errorCode)
+			{
+				app.showMessage('Connect error: ' + errorCode + '.');
+			});
+	};
+
+	document.addEventListener(
+		'deviceready',
+		function() { evothings.scriptsLoaded(app.onDeviceReady) },
+		false);
+	</script>
+
+</body>
+
+</html>
